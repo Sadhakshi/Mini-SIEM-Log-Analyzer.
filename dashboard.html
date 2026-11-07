@@ -1,0 +1,16 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Mini SIEM | SOC Dashboard</title><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{font-family:system-ui;background:#0b1220;color:#e5eaf3;margin:0;padding:35px;}
+main{max-width:1150px;margin:auto}h1{color:#8bd5ff}.sub{color:#9caac1}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:15px;margin:28px 0}
+.card{background:#172238;border:1px solid #314158;border-radius:12px;padding:20px}
+small{display:block;color:#9caac1;text-transform:capitalize}strong{font-size:29px;display:block;margin-top:8px}
+table{width:100%;border-collapse:collapse;background:#172238}th,td{text-align:left;padding:13px;border-bottom:1px solid #314158}
+th{color:#8bd5ff}.scroll{overflow-x:auto}footer{color:#9caac1;margin-top:25px}</style></head>
+<body><main><h1>🛡 Mini SIEM — SOC Dashboard</h1>
+<p class="sub">Offline educational dashboard · Synthetic authentication data</p>
+<div class="cards"><div class="card"><small>Total Events</small><strong>13</strong></div><div class="card"><small>Failed Logins</small><strong>8</strong></div><div class="card"><small>Successful Logins</small><strong>4</strong></div><div class="card"><small>Alerts Generated</small><strong>5</strong></div></div><h2>Detection alerts</h2>
+<div class="scroll"><table><thead><tr><th>Severity</th><th>Rule</th><th>Entity</th><th>Events</th><th>First seen</th><th>MITRE</th></tr></thead>
+<tbody><tr><td>HIGH</td><td>REPEATED_FAILURES_BY_IP</td><td>198.51.100.20</td><td>4</td><td>2026-11-01T09:01:00</td><td>T1110</td></tr><tr><td>HIGH</td><td>REPEATED_FAILURES_BY_IP</td><td>203.0.113.40</td><td>4</td><td>2026-11-01T09:20:00</td><td>T1110</td></tr><tr><td>MEDIUM</td><td>REPEATED_FAILURES_BY_USER</td><td>bob</td><td>4</td><td>2026-11-01T09:01:00</td><td>T1110</td></tr><tr><td>HIGH</td><td>SUCCESS_AFTER_FAILURES</td><td>198.51.100.20</td><td>4</td><td>2026-11-01T09:01:00</td><td>T1110</td></tr><tr><td>HIGH</td><td>POSSIBLE_PASSWORD_SPRAY</td><td>203.0.113.40</td><td>4</td><td>2026-11-01T09:20:00</td><td>T1110.003</td></tr></tbody></table></div>
+<footer>MITRE ATT&CK mappings are indicative. Alerts require analyst investigation, not proof of malicious activity.</footer>
+</main></body></html>

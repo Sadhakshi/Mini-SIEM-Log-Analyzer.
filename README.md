@@ -1,59 +1,53 @@
-# Mini SIEM Log Analyzer
+# Mini SIEM Log Analyzer — Intermediate Portfolio Edition
 
-A beginner-friendly Python security monitoring project that reads **synthetic authentication events** from CSV, detects suspicious login patterns, and exports a JSON incident summary. Built with Python's standard library only.
+Python-based **educational SOC log analysis project** that reads synthetic CSV authentication events, correlates failures over time, creates severity-labelled findings, maps indicative MITRE ATT&CK techniques, and exports a JSON report and offline HTML dashboard. **Not a production SIEM.**
 
-## Features
-
-- Parse and validate timestamped CSV security events.
-- Detect four or more failed logins within ten minutes, grouped by source IP or username.
-- Flag a successful login following multiple failures from the same IP.
-- Print severity-labelled alerts and event statistics.
-- Export findings to `reports/incident_report.json`.
-
-## Quick start
-
-Requires Python 3.9+.
+## Quick start (Python 3.9+, no third-party packages)
 
 ```bash
 python3 siem_log_analyzer.py
+python3 -m unittest discover -s tests -v
 ```
 
-Or specify input/output paths:
+Open `reports/dashboard.html` in your browser after running the script. Reports are generated from the synthetic CSV.
 
-```bash
-python3 siem_log_analyzer.py --input sample_data/sample_logs.csv --output reports/incident_report.json
-```
+## Features
 
-## Project layout
+- Validate and chronologically sort timestamped CSV login/logout records.
+- Detect 4+ failures per IP or username within a 10-minute sliding window.
+- Detect successful authentication after multiple failures from the same IP.
+- Detect **possible password spraying** when one IP fails against 4+ distinct users in 10 minutes.
+- Annotate findings with MITRE ATT&CK **T1110 (Brute Force)** or **T1110.003 (Password Spraying)** as investigative hypotheses, not confirmed techniques.
+- Generate `reports/incident_report.json` and a responsive offline `reports/dashboard.html`.
+- Run six automated tests with `unittest`.
+
+## Project structure
 
 ```text
-Mini-SIEM-Log-Analyzer/
-├── siem_log_analyzer.py
-├── sample_data/
-│   └── sample_logs.csv
-├── reports/
-│   └── incident_report.json (generated)
-├── README.md
-└── .gitignore
+siem_log_analyzer.py         # ingestion, detection, reports, dashboard
+sample_data/sample_logs.csv # synthetic demonstration events
+reports/incident_report.json # generated report
+reports/dashboard.html       # generated dashboard
+ tests/test_siem.py          # unit tests
+README.md
+.gitignore
 ```
 
-## Detection logic
+## Sample alert investigation workflow
 
-| Rule | Trigger | Severity |
-| --- | --- | --- |
-| Repeated failures by IP | >=4 failed logins from an IP within 10 minutes | HIGH |
-| Repeated failures by username | >=4 failed logins for a username within 10 minutes | MEDIUM |
-| Success after failures | Successful login from an IP following >=4 failures within 10 minutes | HIGH |
+1. Review severity, rule name, time window, source IP and affected users.
+2. Inspect related authentication events and check whether an authorised test explains the activity.
+3. Consider legitimate causes such as mistyped passwords or shared NAT addresses.
+4. Escalate suspicious findings for investigation; **do not assume an alert proves an attack**.
 
-The rules generate one summary alert per matching entity. Multiple alerts may describe the same sequence. They are **investigation indicators**, not proof of an attack. This is a teaching demo, not a production SIEM: it has no real-time ingestion, persistence, tuning, or enrichment.
+## Detection design and limitations
 
-## Sample data and privacy
+Rules operate on a small, local CSV. They produce one summary alert per matching entity, so separate rules may flag overlapping events. Severity is a demonstration label, not a risk score. There is no streaming ingestion, threat intelligence, user baselining, role-based access control, alert lifecycle, persistence or false-positive tuning. MITRE mappings are analyst aids, not proof of attacker behaviour. All IPs use documentation-only address ranges and all users are fictional.
 
-All names and events are fictional. IP addresses use documentation-only ranges (RFC 5737). Do not publish real credentials, personal information, or confidential logs.
+## How to discuss this project in an interview
 
-## Next improvements
+Explain the CSV ingestion and validation, time-window correlation, threshold choice, MITRE mappings, evidence in JSON, HTML report generation and unit tests. Describe a false positive (multiple legitimate users behind one IP) and a next improvement (event-level correlation or a real event format adapter).
 
-- Unit tests for edge cases and time-window boundaries.
-- Alert deduplication and false-positive analysis.
-- Stream processing and richer detection rules.
-- Dashboard and analyst triage workflow.
+## GitHub upload
+
+Upload the extracted files and folders to your existing repository. Replace older files with matching names, and commit with message `Upgrade Mini SIEM with correlation, MITRE mapping, dashboard and tests`.

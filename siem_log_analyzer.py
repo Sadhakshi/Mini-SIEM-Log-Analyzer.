@@ -1,6 +1,7 @@
 import argparse
 import csv
 import json
+import html
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -72,6 +73,31 @@ def detect_alerts(events, threshold=4, window_minutes=10):
                     "description": "Successful login after multiple failed attempts from the same IP; investigate context",
                 })
                 break
+    # Password spraying: one IP fails against multiple distinct usernames in a window.
+    for ip, failures in sorted(failed_by_ip.items()):
+        for end, current in enumerate(failures):
+            recent = [e for e in failures[:end + 1]
+                      if timedelta(0) <= current["parsed_timestamp"] - e["parsed_timestamp"] <= timedelta(minutes=window_minutes)]
+            users = sorted({e["username"] for e in recent})
+            if len(users) >= threshold:
+                alerts.append({
+                    "type": "POSSIBLE_PASSWORD_SPRAY", "severity": "HIGH", "entity": ip,
+                    "count": len(recent), "distinct_users": len(users),
+                    "first_seen": recent[0]["timestamp"], "last_seen": current["timestamp"],
+                    "description": "Failures across multiple accounts from one source; investigate context",
+                })
+                break
+
+    mapping = {
+        "REPEATED_FAILURES_BY_IP": ("T1110", "Brute Force"),
+        "REPEATED_FAILURES_BY_USER": ("T1110", "Brute Force"),
+        "SUCCESS_AFTER_FAILURES": ("T1110", "Brute Force"),
+        "POSSIBLE_PASSWORD_SPRAY": ("T1110.003", "Password Spraying"),
+    }
+    for alert in alerts:
+        technique_id, technique_name = mapping[alert["type"]]
+        alert["mitre_attack"] = {"technique_id": technique_id, "technique_name": technique_name}
+        alert["investigation_note"] = "Review account context, source reputation and related events; this rule is not proof of compromise."
     return alerts
 
 
@@ -90,10 +116,42 @@ def build_report(events, alerts):
     }
 
 
+def render_dashboard(report, path):
+    """Write a static, offline HTML report; no server or external libraries."""
+    summary = report["summary"]
+    cards = "".join(f'<div class="card"><small>{html.escape(k.replace("_", " ").title())}</small><strong>{html.escape(str(v))}</strong></div>'
+                    for k, v in summary.items() if k != "alerts_by_severity")
+    rows = "".join(
+        "<tr>" + "".join(f"<td>{html.escape(str(value))}</td>" for value in (
+            a["severity"], a["type"], a["entity"], a["count"],
+            a["first_seen"], a["mitre_attack"]["technique_id"])) + "</tr>"
+        for a in report["alerts"]
+    )
+    page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Mini SIEM | SOC Dashboard</title><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{{font-family:system-ui;background:#0b1220;color:#e5eaf3;margin:0;padding:35px;}}
+main{{max-width:1150px;margin:auto}}h1{{color:#8bd5ff}}.sub{{color:#9caac1}}
+.cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:15px;margin:28px 0}}
+.card{{background:#172238;border:1px solid #314158;border-radius:12px;padding:20px}}
+small{{display:block;color:#9caac1;text-transform:capitalize}}strong{{font-size:29px;display:block;margin-top:8px}}
+table{{width:100%;border-collapse:collapse;background:#172238}}th,td{{text-align:left;padding:13px;border-bottom:1px solid #314158}}
+th{{color:#8bd5ff}}.scroll{{overflow-x:auto}}footer{{color:#9caac1;margin-top:25px}}</style></head>
+<body><main><h1>🛡 Mini SIEM — SOC Dashboard</h1>
+<p class="sub">Offline educational dashboard · Synthetic authentication data</p>
+<div class="cards">{cards}</div><h2>Detection alerts</h2>
+<div class="scroll"><table><thead><tr><th>Severity</th><th>Rule</th><th>Entity</th><th>Events</th><th>First seen</th><th>MITRE</th></tr></thead>
+<tbody>{rows or '<tr><td colspan="6">No alerts</td></tr>'}</tbody></table></div>
+<footer>MITRE ATT&CK mappings are indicative. Alerts require analyst investigation, not proof of malicious activity.</footer>
+</main></body></html>"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(page, encoding="utf-8")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Analyse synthetic authentication logs")
     parser.add_argument("--input", type=Path, default=Path("sample_data/sample_logs.csv"))
     parser.add_argument("--output", type=Path, default=Path("reports/incident_report.json"))
+    parser.add_argument("--dashboard", type=Path, default=Path("reports/dashboard.html"))
     args = parser.parse_args()
     try:
         events = load_events(args.input)
@@ -101,6 +159,7 @@ def main():
         report = build_report(events, alerts)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        render_dashboard(report, args.dashboard)
     except (OSError, ValueError) as error:
         parser.exit(1, f"Error: {error}\n")
 
@@ -116,6 +175,7 @@ def main():
     if not alerts:
         print("No threshold-based alerts detected.")
     print(f"\nReport saved to: {args.output}")
+    print(f"Dashboard saved to: {args.dashboard}")
     print("Note: Alerts are indicators for investigation, not proof of an attack.")
 
 

@@ -5,9 +5,9 @@
     "total_events": 13,
     "failed_logins": 8,
     "successful_logins": 4,
-    "alerts_generated": 4,
+    "alerts_generated": 5,
     "alerts_by_severity": {
-      "HIGH": 3,
+      "HIGH": 4,
       "MEDIUM": 1
     }
   },
@@ -19,7 +19,12 @@
       "count": 4,
       "first_seen": "2026-11-01T09:01:00",
       "last_seen": "2026-11-01T09:04:00",
-      "description": "At least 4 failed logins within 10 minutes"
+      "description": "At least 4 failed logins within 10 minutes",
+      "mitre_attack": {
+        "technique_id": "T1110",
+        "technique_name": "Brute Force"
+      },
+      "investigation_note": "Review account context, source reputation and related events; this rule is not proof of compromise."
     },
     {
       "type": "REPEATED_FAILURES_BY_IP",
@@ -28,7 +33,12 @@
       "count": 4,
       "first_seen": "2026-11-01T09:20:00",
       "last_seen": "2026-11-01T09:23:00",
-      "description": "At least 4 failed logins within 10 minutes"
+      "description": "At least 4 failed logins within 10 minutes",
+      "mitre_attack": {
+        "technique_id": "T1110",
+        "technique_name": "Brute Force"
+      },
+      "investigation_note": "Review account context, source reputation and related events; this rule is not proof of compromise."
     },
     {
       "type": "REPEATED_FAILURES_BY_USER",
@@ -37,7 +47,12 @@
       "count": 4,
       "first_seen": "2026-11-01T09:01:00",
       "last_seen": "2026-11-01T09:04:00",
-      "description": "At least 4 failed logins within 10 minutes"
+      "description": "At least 4 failed logins within 10 minutes",
+      "mitre_attack": {
+        "technique_id": "T1110",
+        "technique_name": "Brute Force"
+      },
+      "investigation_note": "Review account context, source reputation and related events; this rule is not proof of compromise."
     },
     {
       "type": "SUCCESS_AFTER_FAILURES",
@@ -46,7 +61,27 @@
       "count": 4,
       "first_seen": "2026-11-01T09:01:00",
       "last_seen": "2026-11-01T09:05:00",
-      "description": "Successful login after multiple failed attempts from the same IP; investigate context"
+      "description": "Successful login after multiple failed attempts from the same IP; investigate context",
+      "mitre_attack": {
+        "technique_id": "T1110",
+        "technique_name": "Brute Force"
+      },
+      "investigation_note": "Review account context, source reputation and related events; this rule is not proof of compromise."
+    },
+    {
+      "type": "POSSIBLE_PASSWORD_SPRAY",
+      "severity": "HIGH",
+      "entity": "203.0.113.40",
+      "count": 4,
+      "distinct_users": 4,
+      "first_seen": "2026-11-01T09:20:00",
+      "last_seen": "2026-11-01T09:23:00",
+      "description": "Failures across multiple accounts from one source; investigate context",
+      "mitre_attack": {
+        "technique_id": "T1110.003",
+        "technique_name": "Password Spraying"
+      },
+      "investigation_note": "Review account context, source reputation and related events; this rule is not proof of compromise."
     }
   ]
 }
