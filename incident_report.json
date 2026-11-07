@@ -1,0 +1,52 @@
+{
+  "project": "Mini SIEM Log Analyzer",
+  "data_type": "Synthetic demonstration logs",
+  "summary": {
+    "total_events": 13,
+    "failed_logins": 8,
+    "successful_logins": 4,
+    "alerts_generated": 4,
+    "alerts_by_severity": {
+      "HIGH": 3,
+      "MEDIUM": 1
+    }
+  },
+  "alerts": [
+    {
+      "type": "REPEATED_FAILURES_BY_IP",
+      "severity": "HIGH",
+      "entity": "198.51.100.20",
+      "count": 4,
+      "first_seen": "2026-11-01T09:01:00",
+      "last_seen": "2026-11-01T09:04:00",
+      "description": "At least 4 failed logins within 10 minutes"
+    },
+    {
+      "type": "REPEATED_FAILURES_BY_IP",
+      "severity": "HIGH",
+      "entity": "203.0.113.40",
+      "count": 4,
+      "first_seen": "2026-11-01T09:20:00",
+      "last_seen": "2026-11-01T09:23:00",
+      "description": "At least 4 failed logins within 10 minutes"
+    },
+    {
+      "type": "REPEATED_FAILURES_BY_USER",
+      "severity": "MEDIUM",
+      "entity": "bob",
+      "count": 4,
+      "first_seen": "2026-11-01T09:01:00",
+      "last_seen": "2026-11-01T09:04:00",
+      "description": "At least 4 failed logins within 10 minutes"
+    },
+    {
+      "type": "SUCCESS_AFTER_FAILURES",
+      "severity": "HIGH",
+      "entity": "198.51.100.20",
+      "count": 4,
+      "first_seen": "2026-11-01T09:01:00",
+      "last_seen": "2026-11-01T09:05:00",
+      "description": "Successful login after multiple failed attempts from the same IP; investigate context"
+    }
+  ]
+}
